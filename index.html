@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mareko</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=PT+Serif&display=swap" rel="stylesheet">
+    
+    <link href="./style.css" rel="stylesheet">
+    <script src="./utils.js"></script>
+    <script src="./socket-manager.js"></script>
+</head>
+<body>
+    <div id="app">
+        <page name="init" :active="page">
+            Connecting to game server...<br>
+            This might take a few seconds.
+        </page>
+        <page name="recon" :active="page">
+            Woopsie Doopsie!<br>
+            Connection lost - reconnecting...
+        </page>
+        <page name="main-menu" :active="page">
+            Your Name: <input type="text" v-model="self.name"><br>
+            <br>
+            <button @click="newGame()">New Game</button><br>
+            <input type="text" v-model="menu.joingame"><button @click="joinGame()">Join Game</button><br>
+        </page>
+        <page name="game-lobby" :active="page">
+            In Game Lobby. ({{ game.token }})<br>
+            Players: {{ game.players.length }} / {{ game.maxPlayers }}<br>
+            <p v-for="pl of game.players" :key="pl.uuid" v-html="pl.name + (pl.uuid == game.leader ? '👑' : '')"></p><br>
+            <button @click="startGame()" :disabled="!isSelfLeader">Start</button>
+        </page>
+        <page name="game-done" :active="page">
+            Game's done!<br>
+            Hope you had fun!
+        </page>
+        <page name="game-running" :active="page" :game="game">
+            <panel name="marks" :state="panelArrangements[game.state] && panelArrangements[game.state].marks" :game="game">
+                <div id="marks-container">
+                    <badge type="fire" score="4" draggable="true" :obj="game.temp">awd</badge>
+                </div>
+                <div id="marks-crafter">
+
+                </div>
+            </panel>
+            <panel name="deck" :state="panelArrangements[game.state] && panelArrangements[game.state].deck" :game="game">
+                
+            </panel>
+            <panel name="picking" :state="panelArrangements[game.state] && panelArrangements[game.state].picking" :game="game">
+
+            </panel>
+            <panel name="fighting" :state="panelArrangements[game.state] && panelArrangements[game.state].fighting" :game="game">
+
+            </panel>
+        </page>
+    </div>
+
+    <template id="t-page">
+        <div :class="{ page: true, active: active == name }" :id="'page-' + name">
+            <slot></slot>
+        </div>
+    </template>
+
+    <template id="t-panel">
+        <div class="panel" :id="'panel-' + name" :state="state">
+            <slot></slot>
+        </div>
+    </template>
+
+    <template id="t-badge">
+        <div :class="{ mark: true, draggable: draggable }" :style="`left:${px}px;top:${py}px;`" @mousedown="mousedown" @mouseup="mouseup" @mousemove="mousemove">
+            <img :src="`./assets/img/mark_${type}.png`" draggable="false"/>
+            <p v-html="score"></p>
+        </div>
+    </template>
+
+    <script src="./controller.js"></script>
+    <script src="./game.js"></script>
+</body>
+</html>
