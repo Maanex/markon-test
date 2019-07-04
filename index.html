@@ -38,35 +38,38 @@
             Game's done!<br>
             Hope you had fun!
         </page>
-        <page name="game-running" :active="page" :game="game">
-            <panel name="marks" :state="panelArrangements[game.state] && panelArrangements[game.state].marks" :game="game">
+        <page name="game-running" :active="page" :game="game" :self="self">
+            <panel name="marks" :state="panelArrangements[game.state] && panelArrangements[game.state].marks" :game="game" :self="self">
                 <div id="marks-container">
-                    <badge v-for="(m, i) of game.pocket" :key="i" :obj="m" :index="i" :draggable="true"></badge>
+                    <badge v-for="(m, i) of game.pocket" :key="i" :obj="m" :index="i" :draggable="true" :pickable="false" :game="game" :self="self"></badge>
                 </div>
                 <div id="marks-crafter">
-
+                    <div id="frame">
+                        <div v-for="i of game.upgrades.crafter" :key="i" class="slot" :id="i-1"></div>
+                        <button>Craft</button>
+                    </div>
                 </div>
             </panel>
-            <panel name="deck" :state="panelArrangements[game.state] && panelArrangements[game.state].deck" :game="game">
+            <panel name="deck" :state="panelArrangements[game.state] && panelArrangements[game.state].deck" :game="game" :self="self">
                 
             </panel>
-            <panel name="picking" :state="panelArrangements[game.state] && panelArrangements[game.state].picking" :game="game">
+            <panel name="picking" :state="panelArrangements[game.state] && panelArrangements[game.state].picking" :game="game" :self="self">
                 <div id="picking-area">
                     <div id="players">
-                        <div v-for="p of game.players" class="player">
+                        <div v-for="p of game.players" :class="{ player: true, done: game.donePicking.includes(p.uuid) }">
                             <div :class="{ icon: true, picking: p.uuid == game.pickingNow }"></div>
                             <p v-html="p.name"></p>
                         </div>
                     </div>
                     <div id="spawn">
-                        <badge v-for="(m, i) of game.spawner" :key="i" :obj="m" :index="i" :draggable="false"></badge>
+                        <badge v-for="(m, i) of game.spawner" v-if="m" :key="i" :obj="m" :index="i" :draggable="false" :pickable="game.pickingNow == self.uuid" :game="game" :self="self"></badge>
                     </div>
                 </div>
                 <div id="picking-upgrades">
 
                 </div>
             </panel>
-            <panel name="fighting" :state="panelArrangements[game.state] && panelArrangements[game.state].fighting" :game="game">
+            <panel name="fighting" :state="panelArrangements[game.state] && panelArrangements[game.state].fighting" :game="game" :self="self">
 
             </panel>
         </page>
@@ -85,9 +88,10 @@
     </template>
 
     <template id="t-badge">
-        <div :class="{ mark: true, draggable: draggable }"
+        <div :class="{ mark: true, draggable: draggable, pickable: pickable }"
              :style="obj.posRel?`left:${obj.posX}%;top:${obj.posY}%;`:`left:${obj.posX}px;top:${obj.posY}px;`"
-             :onmousedown="draggable?`dragMark(${index},window.event||arguments.callee.caller.arguments[0])`:''">
+             :onmousedown="draggable?`dragMark(${index},window.event||arguments.callee.caller.arguments[0])`:''"
+             @click="pick">
                 <img :src="`./assets/img/mark_${obj.type}.png`" draggable="false"/>
                 <p v-html="obj.score"></p>
         </div>

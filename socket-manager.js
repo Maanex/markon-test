@@ -3,6 +3,7 @@
 const NEW_GAME = 'NEW_GAME';
 const JOIN_GAME = 'JOIN_GAME';
 const START_GAME = 'START_GAME';
+const PICK_TOKEN = 'PICK_TOKEN';
 
 // in
 const GAME_NOT_FOUND = 'GAME_NOT_FOUND';
@@ -13,6 +14,11 @@ const PLAYER_QUIT = 'PLAYER_QUIT';
 const GAME_UPDATE = 'GAME_UPDATE';
 const TOKEN_SPAWN = 'TOKEN_SPAWN';
 const PICKING_NOW = 'PICKING_NOW';
+const UPDATE_PLAYERS = 'UPDATE_PLAYERS';
+const TOKEN_PICKED = 'TOKEN_PICKED';
+const NEXT = 'NEXT';
+const POCKET_ADD = 'POCKET_ADD';
+const POCKET_REMOVE = 'POCKET_REMOVE';
 
 
 var socket;
@@ -76,7 +82,9 @@ function initSocket(reconnect = false) {
             case PLAYER_JOIN:
                 app.game.players.push({
                     name: mes[1],
-                    uuid: mes[2]
+                    uuid: mes[2],
+                    rank: 0,
+                    vp: 0
                 });
                 break;
 
@@ -97,6 +105,8 @@ function initSocket(reconnect = false) {
                         case 'state':
                             app.game.state = data[1];
                             syncGamestatePage();
+                            app.game.donePicking.splice(0, app.game.donePicking.length);
+                            app.game.crafter.splice(0, app.game.crafter.length);
                             break;
                         case 'round':
                             app.game.round = data[1];
@@ -106,22 +116,59 @@ function initSocket(reconnect = false) {
                 break;
 
             case TOKEN_SPAWN:
-                app.game.spawner = [];
                 for (var i = 1; i < mes.length; i++) {
                     var data = mes[i].split(':');
                     var rand = new Math.seedrandom(`${app.game.token}${app.game.round}${i}`);
-                    app.game.spawner[data[0]] = {
+                    Vue.set(app.game.spawner, data[0], {
                         type: data[1],
                         score: data[2],
                         posX: rand() * 94,
                         posY: rand() * 75,
                         posRel: true
-                    }
+                    });
                 }
                 break;
 
             case PICKING_NOW:
                 app.game.pickingNow = mes[1];
+                if (mes[2]) app.game.donePicking.push(mes[2]);
+                break;
+
+            case UPDATE_PLAYERS:
+                var newArray = [];
+                for (var i = 1; i < mes.length; i++) {
+                    var data = mes[i].split(':');
+                    for (var p of app.game.players) {
+                        if (p.uuid == data[0]) {
+                            p.rank = data[1];
+                            p.vp = data[2];
+                            newArray.push(p);
+                        }
+                    }
+                }
+                app.game.players = [...newArray];
+                break;
+
+            case TOKEN_PICKED:
+                // TODO mes[2] is the uuid from the player that picked it. play a nice animation thx.
+                Vue.set(app.game.spawner, mes[1], undefined);
+                break;
+
+            case NEXT:
+                // TODO
+                console.log(`Next Phase In ${mes[1]}`);
+                break;
+
+            case POCKET_ADD:
+                app.game.pocket.push({
+                    index: app.game.pocket.length,
+                    type: mes[1],
+                    score: mes[2],
+                    velX: 0,
+                    velY: 0,
+                    posX: 20,
+                    posY: 20
+                });
                 break;
         }
     };

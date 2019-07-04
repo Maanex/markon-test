@@ -110,6 +110,41 @@ img {
     background: #00000022;
 }
 
+#marks-crafter > #frame {
+    width: 120px;
+    border: 1px solid orange;
+    margin: 50vh 0 0 40px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 2px;
+}
+
+#marks-crafter > #frame > .slot {
+    display: block;
+    width: 64px;
+    height: 64px;
+    margin: 13px;
+    background-image: url('./assets/img/mark_slot.png');
+}
+#marks-crafter > #frame > .slot:first-child { margin-top: 27px; }
+
+#marks-crafter > #frame > button {
+    display: block;
+    transform: translateY(50%);
+    padding: 2px 15px;
+    background: #101417;
+    border: 1px solid orange;
+    outline: none;
+    border-radius: 2px;
+    cursor: pointer;
+    color: #ababab;
+    transition: .3s ease all;
+    font-size: 20pt;
+}
+#marks-crafter > #frame > button:hover { background: #080a0c; color: #efefef; }
+
 #picking-area {
     display: inline-block;
     height: calc(100% - 200px);
@@ -136,6 +171,11 @@ img {
     justify-content: space-evenly;
 }
 
+#picking-area > #players > .player {
+    opacity: 1;
+    transition: .3s ease all;
+}
+
 #picking-area > #players > .player > .icon {
     display: block;
     background: #777777;
@@ -145,14 +185,8 @@ img {
     height: 64px;
 }
 
-#picking-area > #players > .player > .icon.picking {
-    display: block;
-    background: #777777;
-    border: 2px solid orange;
-    border-radius: 100%;
-    width: 64px;
-    height: 64px;
-}
+#picking-area > #players > .player > .icon.picking { border: 2px solid orange; }
+#picking-area > #players > .player.done { opacity: .5; }
 
 #picking-area > #players > .player > p {
     margin: 0;
@@ -183,11 +217,13 @@ img {
     padding: 0;
     user-select: none;
     -moz-user-select: -moz-none;
-    cursor: pointer;
+    cursor: default;
     z-index: 106;
 }
+.mark:hover { z-index: 107; }
 .mark.draggable { cursor: grab; }
-.mark:not(.draggable):hover > img { filter: drop-shadow(0 0 4px #fff); }
+.mark.pickable { cursor: pointer; }
+.mark.pickable:hover > img { filter: drop-shadow(0 0 4px #fff); }
 
 .mark > img {
     position: absolute;
