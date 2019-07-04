@@ -11,6 +11,8 @@ const GAME_JOIN = 'GAME_JOIN';
 const PLAYER_JOIN = 'PLAYER_JOIN';
 const PLAYER_QUIT = 'PLAYER_QUIT';
 const GAME_UPDATE = 'GAME_UPDATE';
+const TOKEN_SPAWN = 'TOKEN_SPAWN';
+const PICKING_NOW = 'PICKING_NOW';
 
 
 var socket;
@@ -59,8 +61,9 @@ function initSocket(reconnect = false) {
                 app.game.maxPlayers = mes[3];
                 app.game.leader = mes[4];
                 app.game.state = mes[5];
+                app.game.round = mes[6];
                 app.game.players = [];
-                for (var i = 6; i < mes.length; i++) {
+                for (var i = 7; i < mes.length; i++) {
                     var player = mes[i].split(':');
                     app.game.players.push({
                         name: player[0],
@@ -95,8 +98,30 @@ function initSocket(reconnect = false) {
                             app.game.state = data[1];
                             syncGamestatePage();
                             break;
+                        case 'round':
+                            app.game.round = data[1];
+                            break;
                     }
                 }
+                break;
+
+            case TOKEN_SPAWN:
+                app.game.spawner = [];
+                for (var i = 1; i < mes.length; i++) {
+                    var data = mes[i].split(':');
+                    var rand = new Math.seedrandom(`${app.game.token}${app.game.round}${i}`);
+                    app.game.spawner[data[0]] = {
+                        type: data[1],
+                        score: data[2],
+                        posX: rand() * 94,
+                        posY: rand() * 75,
+                        posRel: true
+                    }
+                }
+                break;
+
+            case PICKING_NOW:
+                app.game.pickingNow = mes[1];
                 break;
         }
     };

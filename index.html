@@ -6,12 +6,14 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
     <link href="https://fonts.googleapis.com/css?family=PT+Serif&display=swap" rel="stylesheet">
     
+    <script src="./assets/lib/seedrandom.min.js"></script>
+    
     <link href="./style.css" rel="stylesheet">
     <script src="./utils.js"></script>
     <script src="./socket-manager.js"></script>
 </head>
 <body>
-    <div id="app">
+    <div id="app" mousemove="alert(1)">
         <page name="init" :active="page">
             Connecting to game server...<br>
             This might take a few seconds.
@@ -39,7 +41,7 @@
         <page name="game-running" :active="page" :game="game">
             <panel name="marks" :state="panelArrangements[game.state] && panelArrangements[game.state].marks" :game="game">
                 <div id="marks-container">
-                    <badge type="fire" score="4" draggable="true" :obj="game.temp">awd</badge>
+                    <badge v-for="(m, i) of game.pocket" :key="i" :obj="m" :index="i" :draggable="true"></badge>
                 </div>
                 <div id="marks-crafter">
 
@@ -49,7 +51,20 @@
                 
             </panel>
             <panel name="picking" :state="panelArrangements[game.state] && panelArrangements[game.state].picking" :game="game">
+                <div id="picking-area">
+                    <div id="players">
+                        <div v-for="p of game.players" class="player">
+                            <div :class="{ icon: true, picking: p.uuid == game.pickingNow }"></div>
+                            <p v-html="p.name"></p>
+                        </div>
+                    </div>
+                    <div id="spawn">
+                        <badge v-for="(m, i) of game.spawner" :key="i" :obj="m" :index="i" :draggable="false"></badge>
+                    </div>
+                </div>
+                <div id="picking-upgrades">
 
+                </div>
             </panel>
             <panel name="fighting" :state="panelArrangements[game.state] && panelArrangements[game.state].fighting" :game="game">
 
@@ -70,9 +85,11 @@
     </template>
 
     <template id="t-badge">
-        <div :class="{ mark: true, draggable: draggable }" :style="`left:${px}px;top:${py}px;`" @mousedown="mousedown" @mouseup="mouseup" @mousemove="mousemove">
-            <img :src="`./assets/img/mark_${type}.png`" draggable="false"/>
-            <p v-html="score"></p>
+        <div :class="{ mark: true, draggable: draggable }"
+             :style="obj.posRel?`left:${obj.posX}%;top:${obj.posY}%;`:`left:${obj.posX}px;top:${obj.posY}px;`"
+             :onmousedown="draggable?`dragMark(${index},window.event||arguments.callee.caller.arguments[0])`:''">
+                <img :src="`./assets/img/mark_${obj.type}.png`" draggable="false"/>
+                <p v-html="obj.score"></p>
         </div>
     </template>
 

@@ -11,36 +11,9 @@ Vue.component('panel', {
 });
 
 Vue.component('badge', {
-    props: [ 'type', 'score', 'draggable', 'obj' ],
-    template: '#t-badge',
-    methods: {
-        mousedown(e) {
-            var rect = e.target.parentNode.getBoundingClientRect();
-            this.$obj.dragXoffset = this.$obj.posX - e.clientX;
-            this.$obj.dragYoffset = this.$obj.posY - e.clientY;
-        },
-        mouseup(e) {
-            this.$obj.dragXoffset = 0;
-            this.$obj.dragYoffset = 0;
-        },
-        mousemove(e) {
-            if (!this.$obj.dragXoffset) return;
-            this.$obj.posX = e.pageX + this.$obj.dragXoffset;
-            this.$obj.posY = e.pageY + this.$obj.dragYoffset;
-        }
-    },
-    computed: {
-        px: function() { return this.$obj.posX; },
-        py: function() { return this.$obj.posY; }
-    }
+    props: [ 'obj', 'index', 'draggable' ],
+    template: '#t-badge'
 });
-
-Vue.prototype.$obj = {
-    dragXoffset: 0,
-    dragYoffset: 0,
-    posX: 0,
-    posY: 0
-}
 
 var app;
 app = new Vue({
@@ -60,13 +33,24 @@ app = new Vue({
             state: '',
             maxPlayers: 0,
             leader: '',
+            round: 0,
             players: [ ],
-            temp: {
-                dragXoffset: 0,
-                dragYoffset: 0,
-                posX: 0,
-                posY: 0
-            }
+            pocket: [
+                {
+                    type: 'fire',
+                    score: 3,
+                    posX: 0,
+                    posY: 0
+                },
+                {
+                    type: 'water',
+                    score: 7,
+                    posX: 0,
+                    posY: 0
+                }
+            ],
+            spawner: [ ],
+            pickingNow: ''
         },
 
 
@@ -122,3 +106,37 @@ app = new Vue({
 app.self.name = window.getCookie('self.name') || `Player${Math.floor(Math.random() * 9000 + 1000)}`;
 app.self.uuid = window.getCookie('self.uuid') || '';
 app.self.token = window.getCookie('self.token') || '';
+
+//
+
+
+var markDragElement = -1;
+var markDragXoffset = 0;
+var markDragYoffset = 0;
+
+function dragMark(index, e) {
+    markDragElement = index;
+    var mark = app.game.pocket[index];
+    markDragXoffset = mark.posX - e.clientX;
+    markDragYoffset = mark.posY - e.clientY;
+}
+
+document.body.addEventListener('mousemove', e => {
+    if (markDragElement < 0) return;
+    var mark = app.game.pocket[markDragElement];
+    mark.posX = e.pageX + markDragXoffset;
+    mark.posY = e.pageY + markDragYoffset;
+    var width = document.getElementById('marks-container').scrollWidth;
+    var height = document.getElementById('marks-container').scrollHeight;
+    if (mark.posX < 0) mark.posX = 0;
+    if (mark.posX > width - 64) mark.posX = width - 64;
+    if (mark.posY < 0) mark.posY = 0;
+    if (mark.posY > height - 64) mark.posY = height - 64;
+});
+
+document.body.addEventListener('mouseup', e => {
+    if (markDragElement < 0) return;
+    markDragElement = -1;
+    markDragXoffset = 0;
+    markDragYoffset = 0;
+});

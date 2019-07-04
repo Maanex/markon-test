@@ -20,6 +20,7 @@ html, body, #app, .page {
 
 img {
     user-select: none;
+    -moz-user-select: -moz-none;
 }
 
 .page {
@@ -51,7 +52,7 @@ img {
     top: 0;
     right: calc(-30vw - 200px);
     background: #13171A;
-    z-index: 10;
+    z-index: 100;
 }
 #panel-marks[state="reduced"] { right: -200px; }
 #panel-marks[state="full"] { right: 0; }
@@ -62,7 +63,7 @@ img {
     top: 0;
     left: -60vw;
     background: darkgray;
-    z-index: 9;
+    z-index: 90;
 }
 #panel-deck[state="full"] { left: 0 }
 
@@ -73,7 +74,7 @@ img {
     left: 0;    
     opacity: 0;
     background: transparent;
-    z-index: 7;
+    z-index: 70;
 }
 #panel-picking[state="full"] { opacity: 1; }
 
@@ -84,7 +85,7 @@ img {
     left: 0;
     opacity: 0;
     background: darkred;
-    z-index: 8;
+    z-index: 80;
 }
 #panel-fighting[state="full"] { opacity: 1; }
 
@@ -109,7 +110,61 @@ img {
     background: #00000022;
 }
 
+#picking-area {
+    display: inline-block;
+    height: calc(100% - 200px);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: green;
+}
 
+#picking-upgrades {
+    display: inline-block;
+    height: 200px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: #00000022;
+}
+
+#picking-area > #players {
+    width: 90%;
+    height: 100px;
+    margin: 50px 5%;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+#picking-area > #players > .player > .icon {
+    display: block;
+    background: #777777;
+    border: 2px solid transparent;
+    border-radius: 100%;
+    width: 64px;
+    height: 64px;
+}
+
+#picking-area > #players > .player > .icon.picking {
+    display: block;
+    background: #777777;
+    border: 2px solid orange;
+    border-radius: 100%;
+    width: 64px;
+    height: 64px;
+}
+
+#picking-area > #players > .player > p {
+    margin: 0;
+    text-align: center;
+    transform: translateX(calc(32px - 50%));
+}
+
+#picking-area > #spawn {
+    height: 40%;
+    transform: translateY(calc(20% + 50px));
+    background: #00000011;
+}
 
 
 
@@ -127,8 +182,12 @@ img {
     margin: 0;
     padding: 0;
     user-select: none;
+    -moz-user-select: -moz-none;
+    cursor: pointer;
+    z-index: 106;
 }
 .mark.draggable { cursor: grab; }
+.mark:not(.draggable):hover > img { filter: drop-shadow(0 0 4px #fff); }
 
 .mark > img {
     position: absolute;
@@ -138,6 +197,7 @@ img {
     left: 0;
     margin: 0;
     padding: 0;
+    transition: .2s ease all;
 }
 
 .mark > p {
