@@ -4,6 +4,8 @@ const NEW_GAME = 'NEW_GAME';
 const JOIN_GAME = 'JOIN_GAME';
 const START_GAME = 'START_GAME';
 const PICK_TOKEN = 'PICK_TOKEN';
+const USE_CRAFTER = 'USE_CRAFTER';
+const PURCHASE_UPGRADE = 'PURCHASE_UPGRADE';
 
 // in
 const GAME_NOT_FOUND = 'GAME_NOT_FOUND';
@@ -19,6 +21,8 @@ const TOKEN_PICKED = 'TOKEN_PICKED';
 const NEXT = 'NEXT';
 const POCKET_ADD = 'POCKET_ADD';
 const POCKET_REMOVE = 'POCKET_REMOVE';
+const CARD_ADD = 'CARD_ADD';
+const UPGRADES = 'UPGRADES';
 
 
 var socket;
@@ -163,12 +167,51 @@ function initSocket(reconnect = false) {
                 app.game.pocket.push({
                     index: app.game.pocket.length,
                     type: mes[1],
-                    score: mes[2],
+                    score: parseInt(mes[2]),
                     velX: 0,
                     velY: 0,
                     posX: 20,
                     posY: 20
                 });
+                break;
+
+            case POCKET_REMOVE:
+                var rem = mes.slice(1).sort((a, b) => b - a);
+                for (var re of rem) {
+                    var c = parseInt(re);
+                    app.game.pocket.splice(c, 1);
+                    if (app.game.deck.includes(c))
+                        app.game.deck.splice(app.game.deck.indexOf(c), 1);
+                    app.game.crafter.splice(0);
+                }
+                for (var i = 0; i < app.game.pocket.length; i++)
+                    app.game.pocket[i].index = i;
+                break;
+
+            case CARD_ADD:
+                var card = {
+                    index: app.game.hand.length,
+                    name: mes[1],
+                    type: mes[2],
+                    img: mes[3],
+                    attack: parseInt(mes[4]),
+                    hp: parseInt(mes[5]),
+                    maxhp: parseInt(mes[6]),
+                    enchslots: parseInt(mes[7]),
+                    //TODO ENCHANTMENTS mes[8]
+                    posX: 0,
+                    posY: 0,
+                    velX: 0,
+                    velY: 0
+                }
+                app.game.hand.push(card);
+                break;
+
+            case UPGRADES:
+                app.game.upgradepoints = parseInt(mes[1]);
+                app.game.upgrades.crafter = parseInt(mes[2]);
+                app.game.upgrades.picks = parseInt(mes[3]);
+                app.game.upgrades.deck = parseInt(mes[4]);
                 break;
         }
     };

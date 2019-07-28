@@ -15,28 +15,28 @@
 <body>
     <div id="app" mousemove="alert(1)">
         <page name="init" :active="page">
-            Connecting to game server...<br>
-            This might take a few seconds.
+            {{ lang.connecting1 }}<br>
+            {{ lang.connecting2 }}
         </page>
         <page name="recon" :active="page">
-            Woopsie Doopsie!<br>
-            Connection lost - reconnecting...
+            {{ lang.recon1 }}<br>
+            {{ lang.recon2 }}
         </page>
         <page name="main-menu" :active="page">
-            Your Name: <input type="text" v-model="self.name"><br>
+            {{ lang.yourname }} <input type="text" v-model="self.name"><br>
             <br>
-            <button @click="newGame()">New Game</button><br>
-            <input type="text" v-model="menu.joingame"><button @click="joinGame()">Join Game</button><br>
+            <button @click="newGame()" v-html="lang.newgame"></button><br>
+            <input type="text" v-model="menu.joingame"><button @click="joinGame()" v-html="lang.joingame"></button><br>
         </page>
         <page name="game-lobby" :active="page">
-            In Game Lobby. ({{ game.token }})<br>
-            Players: {{ game.players.length }} / {{ game.maxPlayers }}<br>
+            {{ lang.inlobby }} ({{ game.token }})<br>
+            {{ lang.players }} {{ game.players.length }} / {{ game.maxPlayers }}<br>
             <p v-for="pl of game.players" :key="pl.uuid" v-html="pl.name + (pl.uuid == game.leader ? '👑' : '')"></p><br>
-            <button @click="startGame()" :disabled="!isSelfLeader">Start</button>
+            <button @click="startGame()" :disabled="!isSelfLeader" v-html="lang.start"></button>
         </page>
         <page name="game-done" :active="page">
-            Game's done!<br>
-            Hope you had fun!
+            {{ lang.gamedone1 }}<br>
+            {{ lang.gamedone2 }}
         </page>
         <page name="game-running" :active="page" :game="game" :self="self">
             <panel name="marks" :state="panelArrangements[game.state] && panelArrangements[game.state].marks" :game="game" :self="self">
@@ -45,13 +45,26 @@
                 </div>
                 <div id="marks-crafter">
                     <div id="frame">
-                        <div v-for="i of game.upgrades.crafter" :key="i" class="slot" :id="i-1"></div>
-                        <button>Craft</button>
+                        <div v-for="i of game.upgrades.crafter" :key="i" class="mark-slot" :id="i-1"></div>
+                        <button onclick="useCrafter()" v-html="lang.craft"></button>
                     </div>
                 </div>
             </panel>
             <panel name="deck" :state="panelArrangements[game.state] && panelArrangements[game.state].deck" :game="game" :self="self">
-                
+                <div id="cards-container">
+                    <card v-for="(m, i) of game.hand" :key="i" :obj="m" :index="i" :game="game" :self="self"></card>
+                </div>
+                <div id="cards-deck">
+                    <div id="row-one">
+                        <div class="card-slot deck-card" v-for="i in game.upgrades.deck" :key="i" :id="i"></div>
+                    </div>
+                    <div id="row-two">
+                        <div class="card-slot hand-card" v-for="i in game.upgrades.deck" :key="i" :id="i * 10"></div>
+                    </div>
+                    <div id="row-four">
+                        <div class="card-slot hand-card" v-for="i in game.upgrades.deck" :key="i" :id="i * 20"></div>
+                    </div>
+                </div>
             </panel>
             <panel name="picking" :state="panelArrangements[game.state] && panelArrangements[game.state].picking" :game="game" :self="self">
                 <div id="picking-area">
@@ -66,7 +79,12 @@
                     </div>
                 </div>
                 <div id="picking-upgrades">
-
+                    {{ lang.upgrade1 }}<br>
+                    {{ lang.upgrade2.replace('%s', game.upgradepoints) }}<br>
+                    <button :disabled="game.upgradepoints < game.upgrades.picks*game.upgrades.picks" onclick="socketSend(PURCHASE_UPGRADE, 'picks')" v-html="lang.upgrade_picks.replace('%s', game.upgrades.picks+1) + ` [${game.upgrades.picks*game.upgrades.picks}]`"></button>
+                    <button :disabled="game.upgradepoints < game.upgrades.crafter*game.upgrades.crafter" onclick="socketSend(PURCHASE_UPGRADE, 'crafter')" v-html="lang.upgrade_crafter.replace('%s', game.upgrades.crafter+1) + ` [${game.upgrades.crafter*game.upgrades.crafter}]`"></button>
+                    <button :disabled="game.upgradepoints < game.upgrades.deck*game.upgrades.deck" onclick="socketSend(PURCHASE_UPGRADE, 'deck')" v-html="lang.upgrade_deck.replace('%s', game.upgrades.deck+1) + ` [${game.upgrades.deck*game.upgrades.deck}]`"></button>
+                    <button :disabled="game.upgradepoints < 1" onclick="socketSend(PURCHASE_UPGRADE, 'heal')" v-html="lang.upgrade_heal + ' [1]'"></button>
                 </div>
             </panel>
             <panel name="fighting" :state="panelArrangements[game.state] && panelArrangements[game.state].fighting" :game="game" :self="self">
@@ -94,6 +112,17 @@
              @click="pick">
                 <img :src="`./assets/img/mark_${obj.type}.png`" draggable="false"/>
                 <p v-html="obj.score"></p>
+        </div>
+    </template>
+
+    <template id="t-card">
+        <div class="card"
+             :style="`left:${obj.posX}px;top:${obj.posY}px;`"
+             :onmousedown="`dragCard(${index},window.event||arguments.callee.caller.arguments[0])`">
+                <img :src="`./assets/img/cardframe_${obj.type}.png`" draggable="false">
+                <p class="hp" v-html="`HP ${obj.hp} / ${obj.maxhp}`"></p>
+                <p class="attack" v-html="`ATTACK ${obj.attack}`"></p>
+                <p class="name" v-html="`${obj.name}`"></p>
         </div>
     </template>
 
