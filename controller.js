@@ -178,6 +178,13 @@ function dragCard(index, e) {
     var card = app.game.hand[index];
     cardDragXoffset = card.posX - e.clientX;
     cardDragYoffset = card.posY - e.clientY;
+    if (app.game.deck.indexOf(card.index) != -1) {
+        socketSend([
+            CHANGE_DECK,
+            app.game.deck.indexOf(card.index)
+        ]);
+        Vue.set(app.game.deck, app.game.deck.indexOf(card.index), undefined);
+    }
 }
 
 document.body.addEventListener('mousemove', e => {
@@ -324,6 +331,13 @@ function updateCards() {
                 var vdist = Math.abs(hmid - (o.posX + CARD_WIDTH / 2));
                 var hdist = Math.abs(vmid - (o.posY + CARD_HEIGHT / 2));
                 var totdist = Math.sqrt(vdist*vdist + hdist*hdist);
+                
+                if (app.game.deck[el.getAttribute('id')] === o.index) {
+                    targetEl = el;
+                    targetX = hmid - CARD_WIDTH/2;
+                    targetY = vmid - CARD_HEIGHT/2;
+                    break;
+                }
 
                 if (totdist < dist) {
                     targetEl = el;
@@ -333,17 +347,22 @@ function updateCards() {
                 }
             }
         }
-        if (targetEl && cardDragElement != c) {
+        if (targetEl && cardDragElement != c && app.game.deck[targetEl.getAttribute('id')] !== o.index) {
             Vue.set(app.game.deck, targetEl.getAttribute('id'), o.index);
+            socketSend([
+                CHANGE_DECK,
+                targetEl.getAttribute('id'),
+                o.index
+            ]);
         }
         
         if (o.posX < 0) {
             o.posX = 0;
             o.velX *= -.3;
-        } else if (o.posX > width - CARD_WIDTH) {
+        } /* else if (o.posX > width - CARD_WIDTH) {
             o.posX += width - CARD_WIDTH - o.posX;
             o.velX *= -.3;
-        } else if (targetX >= 0) {
+        } */ else if (targetX >= 0) {
             o.velX = -(o.posX - targetX) / 2;
         }
         if (o.posY < 0) {

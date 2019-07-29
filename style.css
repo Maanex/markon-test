@@ -135,7 +135,8 @@ img {
 }
 #marks-crafter > #frame > .mark-slot:first-child { margin-top: 27px; }
 
-#marks-crafter > #frame > button {
+#marks-crafter > #frame > button,
+#planning-ready {
     display: block;
     transform: translateY(50%);
     padding: 2px 15px;
@@ -149,6 +150,15 @@ img {
     font-size: 20pt;
 }
 #marks-crafter > #frame > button:hover { background: #080a0c; color: #efefef; }
+
+#planning-ready {
+    margin: auto;
+    border-radius: 999px;
+}
+#planning-ready:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
 
 #picking-area {
     display: inline-block;
@@ -223,12 +233,13 @@ img {
     justify-content: space-evenly;
 }
 
-#cards-deck > div {
+.cardrow {
     width: 100%;
     height: var(--card-height);
     display: flex;
     justify-content: center;
 }
+.cardrow > * { margin: 0 20px; }
 
 #cards-deck > #row-one { padding-bottom: 50px; }
 
@@ -238,7 +249,6 @@ img {
     display: inline-block;
     width: 150px;
     height: 255px;
-    margin: 0 20px;
     padding: 0;
     user-select: none;
     -moz-user-select: -moz-none;
@@ -284,6 +294,15 @@ img {
 .card > .name {
     top: 80px;
     left: 0;
+}
+
+#fighting-cards {
+    width: 100%;
+    height: 100%;
+}
+
+#fighting-cards > .cardrow {
+    height: 100%;
 }
 
 

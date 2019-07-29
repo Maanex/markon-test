@@ -17,3 +17,13 @@ function useCrafter() {
         ...app.game.crafter
     ]);
 }
+
+function planningReady() {
+    socketSend(PLANNING_READY);
+    document.getElementById('planning-ready').disabled = true;
+}
+
+function gstateChange(state) {
+    document.getElementById('planning-ready').disabled = false;
+
+}

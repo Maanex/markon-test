@@ -48,6 +48,7 @@
                         <div v-for="i of game.upgrades.crafter" :key="i" class="mark-slot" :id="i-1"></div>
                         <button onclick="useCrafter()" v-html="lang.craft"></button>
                     </div>
+                    <button id="planning-ready" onclick="planningReady()">Ready</button>
                 </div>
             </panel>
             <panel name="deck" :state="panelArrangements[game.state] && panelArrangements[game.state].deck" :game="game" :self="self">
@@ -55,14 +56,14 @@
                     <card v-for="(m, i) of game.hand" :key="i" :obj="m" :index="i" :game="game" :self="self"></card>
                 </div>
                 <div id="cards-deck">
-                    <div id="row-one">
-                        <div class="card-slot deck-card" v-for="i in game.upgrades.deck" :key="i" :id="i"></div>
+                    <div id="row-one" class="cardrow">
+                        <div class="card-slot deck-card" v-for="i in game.upgrades.deck" :key="i" :id="i - 1"></div>
                     </div>
-                    <div id="row-two">
-                        <div class="card-slot hand-card" v-for="i in game.upgrades.deck" :key="i" :id="i * 10"></div>
+                    <div id="row-two" class="cardrow">
+                        <div class="card-slot hand-card" v-for="i in game.upgrades.deck" :key="i" :id="i + 9"></div>
                     </div>
-                    <div id="row-four">
-                        <div class="card-slot hand-card" v-for="i in game.upgrades.deck" :key="i" :id="i * 20"></div>
+                    <div id="row-four" class="cardrow">
+                        <div class="card-slot hand-card" v-for="i in game.upgrades.deck" :key="i" :id="i + 19"></div>
                     </div>
                 </div>
             </panel>
@@ -81,14 +82,21 @@
                 <div id="picking-upgrades">
                     {{ lang.upgrade1 }}<br>
                     {{ lang.upgrade2.replace('%s', game.upgradepoints) }}<br>
-                    <button :disabled="game.upgradepoints < game.upgrades.picks*game.upgrades.picks" onclick="socketSend(PURCHASE_UPGRADE, 'picks')" v-html="lang.upgrade_picks.replace('%s', game.upgrades.picks+1) + ` [${game.upgrades.picks*game.upgrades.picks}]`"></button>
-                    <button :disabled="game.upgradepoints < game.upgrades.crafter*game.upgrades.crafter" onclick="socketSend(PURCHASE_UPGRADE, 'crafter')" v-html="lang.upgrade_crafter.replace('%s', game.upgrades.crafter+1) + ` [${game.upgrades.crafter*game.upgrades.crafter}]`"></button>
-                    <button :disabled="game.upgradepoints < game.upgrades.deck*game.upgrades.deck" onclick="socketSend(PURCHASE_UPGRADE, 'deck')" v-html="lang.upgrade_deck.replace('%s', game.upgrades.deck+1) + ` [${game.upgrades.deck*game.upgrades.deck}]`"></button>
+                    <button :disabled="game.upgradepoints < Math.pow(2, game.upgrades.picks-1)" onclick="socketSend(PURCHASE_UPGRADE, 'picks')" v-html="lang.upgrade_picks.replace('%s', game.upgrades.picks+1) + ` [${Math.pow(2,game.upgrades.picks-1)}]`"></button>
+                    <button :disabled="game.upgradepoints < Math.pow(2, game.upgrades.crafter-1)" onclick="socketSend(PURCHASE_UPGRADE, 'crafter')" v-html="lang.upgrade_crafter.replace('%s', game.upgrades.crafter+1) + ` [${Math.pow(2, game.upgrades.crafter-1)}]`"></button>
+                    <button :disabled="game.upgradepoints < Math.pow(2, game.upgrades.deck-1)" onclick="socketSend(PURCHASE_UPGRADE, 'deck')" v-html="lang.upgrade_deck.replace('%s', game.upgrades.deck+1) + ` [${Math.pow(2, game.upgrades.deck-1)}]`"></button>
                     <button :disabled="game.upgradepoints < 1" onclick="socketSend(PURCHASE_UPGRADE, 'heal')" v-html="lang.upgrade_heal + ' [1]'"></button>
                 </div>
             </panel>
             <panel name="fighting" :state="panelArrangements[game.state] && panelArrangements[game.state].fighting" :game="game" :self="self">
-
+                <div id="fighting-cards">
+                    <div id="opponent-row" class="cardrow">
+                        
+                    </div>
+                    <div id="own-row" class="cardrow">
+                        
+                    </div>
+                </div>
             </panel>
         </page>
     </div>

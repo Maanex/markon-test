@@ -6,6 +6,9 @@ const START_GAME = 'START_GAME';
 const PICK_TOKEN = 'PICK_TOKEN';
 const USE_CRAFTER = 'USE_CRAFTER';
 const PURCHASE_UPGRADE = 'PURCHASE_UPGRADE';
+const PLANNING_READY = 'PLANNING_READY';
+const CHANGE_DECK = 'CHANGE_DECK';
+const SET_FIGHT_TARGET = 'SET_FIGHT_TARGET'; // TODO
 
 // in
 const GAME_NOT_FOUND = 'GAME_NOT_FOUND';
@@ -23,6 +26,10 @@ const POCKET_ADD = 'POCKET_ADD';
 const POCKET_REMOVE = 'POCKET_REMOVE';
 const CARD_ADD = 'CARD_ADD';
 const UPGRADES = 'UPGRADES';
+const CARD_UPDATE = 'CARD_UPDATE'; // TODO
+const FIGHT_UPDATE = 'FIGHT_UPDATE'; // TODO
+const FIGHT_INIT = 'FIGHT_INIT'; // TODO
+const FIGHT_DONE = 'FIGHT_DONE'; // TODO
 
 
 var socket;
@@ -111,6 +118,7 @@ function initSocket(reconnect = false) {
                             syncGamestatePage();
                             app.game.donePicking.splice(0, app.game.donePicking.length);
                             app.game.crafter.splice(0, app.game.crafter.length);
+                            gstateChange();
                             break;
                         case 'round':
                             app.game.round = data[1];
