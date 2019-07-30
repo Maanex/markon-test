@@ -268,6 +268,42 @@ document.body.addEventListener('mouseup', e => {
         markDragYoffset = 0;
     }
     if (cardDragElement >= 0) {
+        var targetEl = undefined;
+        var dist = CARD_WIDTH;
+        var card = app.game.hand[cardDragElement];
+
+        var width = document.getElementById('cards-container').clientWidth;
+        console.log(card.posX + " + " + width)
+        if (card.posX > width) {
+            trashCard(cardDragElement);
+        } else {
+            for (var el of document.getElementsByClassName('card-slot')) {
+                var top = el.getBoundingClientRect().top;
+                var bot = el.getBoundingClientRect().bottom;
+                var left = el.getBoundingClientRect().left;
+                var right = el.getBoundingClientRect().right;
+                var hmid = left + (right - left) / 2;
+                var vmid = top + (bot - top) / 2;
+    
+                var vdist = Math.abs(hmid - (card.posX + CARD_WIDTH / 2));
+                var hdist = Math.abs(vmid - (card.posY + CARD_HEIGHT / 2));
+                var totdist = Math.sqrt(vdist*vdist + hdist*hdist);
+    
+                if (totdist < dist) {
+                    targetEl = el;
+                    dist = totdist;
+                }
+            }
+            if (targetEl) {
+                Vue.set(app.game.deck, targetEl.getAttribute('id'), cardDragElement);
+                socketSend([
+                    CHANGE_DECK,
+                    targetEl.getAttribute('id'),
+                    cardDragElement
+                ]);
+            }
+        }
+        
         cardDragElement = -1;
         cardDragXoffset = 0;
         cardDragYoffset = 0;
@@ -359,8 +395,8 @@ function updateMarks() {
 
 function updateCards() {
     var c = -1;
-    var width = document.getElementById('cards-container').scrollWidth;
-    var height = document.getElementById('cards-container').scrollHeight;
+    var width = document.getElementById('cards-container').clientWidth;
+    var height = document.getElementById('cards-container').clientHeight;
 
     for (var o of app.game.hand) {
         if (cardDragElement == ++c && (cardDragMouseX != 0 || cardDragMouseY != 0)) {

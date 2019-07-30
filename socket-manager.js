@@ -9,6 +9,7 @@ const PURCHASE_UPGRADE = 'PURCHASE_UPGRADE';
 const PLANNING_READY = 'PLANNING_READY';
 const CHANGE_DECK = 'CHANGE_DECK';
 const SET_FIGHT_TARGET = 'SET_FIGHT_TARGET';
+const TRASH_CARD = 'TRASH_CARD';
 
 // in
 const GAME_NOT_FOUND = 'GAME_NOT_FOUND';
@@ -26,11 +27,12 @@ const POCKET_ADD = 'POCKET_ADD';
 const POCKET_REMOVE = 'POCKET_REMOVE';
 const CARD_ADD = 'CARD_ADD';
 const UPGRADES = 'UPGRADES';
-const CARD_UPDATE = 'CARD_UPDATE'; // TODO
+const CARD_UPDATE = 'CARD_UPDATE';
 const FIGHT_UPDATE = 'FIGHT_UPDATE';
+const FIGHT_ATTACK = 'FIGHT_ATTACK';
 const FIGHT_TURN = 'FIGHT_TURN';
 const FIGHT_INIT = 'FIGHT_INIT';
-const FIGHT_DONE = 'FIGHT_DONE'; // TODO
+const FIGHT_DONE = 'FIGHT_DONE';
 
 
 var socket;
@@ -40,7 +42,7 @@ var socket;
 function initSocket(reconnect = false) {
     window.WebSocket = window.WebSocket || window.MozWebSocket;
 
-    var socketUrl = 'localhost:5000'; // TODO
+    var socketUrl = '192.168.20.228:5000'; // TODO
     var connection = new WebSocket(`ws://${socketUrl}`);
 
     connection.onopen = function () {
@@ -268,7 +270,11 @@ function initSocket(reconnect = false) {
                     app.arrow.toCursor = true;
                     app.arrow.visible = true;
                 }
-                break; 
+                break;
+
+            case FIGHT_ATTACK:
+                // PLAY ATTACKING ANIMATION OR SMTH
+                break;
 
             case FIGHT_DONE:
                 app.arrow.visible = false;
@@ -281,7 +287,7 @@ function initSocket(reconnect = false) {
                 card.attack = parseInt(mes[2]);
                 card.hp = parseInt(mes[3]);
                 card.maxhp = parseInt(mes[4]);
-                card.enchantments = mes[5].split(':');
+                card.enchantments = mes[5] ? mes[5].split(':') : [];
                 break;
         
             case CARD_UPDATE:
@@ -290,7 +296,7 @@ function initSocket(reconnect = false) {
                 card.attack = parseInt(mes[2]);
                 card.hp = parseInt(mes[3]);
                 card.maxhp = parseInt(mes[4]);
-                card.enchantments = mes[5].split(':');
+                card.enchantments = mes[5] ? mes[5].split(':') : [];
                 break;
         }
     };

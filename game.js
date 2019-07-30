@@ -43,3 +43,13 @@ function selectCard(index, fraction) {
     app.arrow.to.x = bounds.left + (bounds.right - bounds.left) / 2;
     app.arrow.to.y = bounds.bottom;
 }
+
+function trashCard(index) {
+    app.game.hand.splice(index, 1);
+    for (var i = 0; i < app.game.hand.length; i++)
+        app.game.hand[i].index = i;
+    socketSend([
+        TRASH_CARD,
+        index
+    ]);
+}
