@@ -14,6 +14,8 @@
 </head>
 <body>
     <div id="app" mousemove="alert(1)">
+        <widget-arrow :data="arrow" :width="100" :minlength="260"></widget-arrow>
+
         <page name="init" :active="page">
             {{ lang.connecting1 }}<br>
             {{ lang.connecting2 }}
@@ -48,7 +50,7 @@
                         <div v-for="i of game.upgrades.crafter" :key="i" class="mark-slot" :id="i-1"></div>
                         <button onclick="useCrafter()" v-html="lang.craft"></button>
                     </div>
-                    <button id="planning-ready" onclick="planningReady()">Ready</button>
+                    <button id="planning-ready" onclick="planningReady()" v-html="lang.ready"></button>
                 </div>
             </panel>
             <panel name="deck" :state="panelArrangements[game.state] && panelArrangements[game.state].deck" :game="game" :self="self">
@@ -90,11 +92,12 @@
             </panel>
             <panel name="fighting" :state="panelArrangements[game.state] && panelArrangements[game.state].fighting" :game="game" :self="self">
                 <div id="fighting-cards">
+                    <p v-html="opponentName" style="position: absolute;"></p>
                     <div id="opponent-row" class="cardrow">
-                        
+                        <card v-for="(m, i) of game.fight.opponentDeck" :key="i" :obj="m" :index="i" :game="game" :self="self" :infight="true" fraction="opponent"></card>
                     </div>
                     <div id="own-row" class="cardrow">
-                        
+                        <card v-for="(m, i) of game.fight.ownDeck" :key="i" :obj="m" :index="i" :game="game" :self="self" :infight="true" fraction="own"></card>
                     </div>
                 </div>
             </panel>
@@ -124,13 +127,29 @@
     </template>
 
     <template id="t-card">
-        <div class="card"
+        <div :class="{ 'card': true, 'infight': infight, 'turn': cardsTurn, 'dead': dead }"
              :style="`left:${obj.posX}px;top:${obj.posY}px;`"
-             :onmousedown="`dragCard(${index},window.event||arguments.callee.caller.arguments[0])`">
+             :onmousedown="infight?`selectCard(${index}, '${fraction}')`:`dragCard(${index},window.event||arguments.callee.caller.arguments[0])`">
                 <img :src="`./assets/img/cardframe_${obj.type}.png`" draggable="false">
                 <p class="hp" v-html="`HP ${obj.hp} / ${obj.maxhp}`"></p>
                 <p class="attack" v-html="`ATTACK ${obj.attack}`"></p>
                 <p class="name" v-html="`${obj.name}`"></p>
+        </div>
+    </template>
+
+    <template id="t-widget-arrow">
+        <div id="widget-arrow"
+             v-if="data.visible"
+             :style="`
+                width: ${width}px;
+                top: ${posY}px;
+                left: ${posX}px;
+                height: ${length}px;
+                transform: rotate(${rot}rad);
+             `">
+            <div class="tale"></div>
+            <div class="body"></div>
+            <div class="head"></div>
         </div>
     </template>
 

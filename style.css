@@ -3,7 +3,6 @@
     font-family: 'PT Serif', serif;
     font-size: 16pt;
     text-shadow: 1px 1px 1px #000000cc;
-    user-select: none;
     -moz-user-select: -moz-none;
 
     --card-width: 150px;
@@ -238,6 +237,7 @@ img {
     height: var(--card-height);
     display: flex;
     justify-content: center;
+    align-items: center;
 }
 .cardrow > * { margin: 0 20px; }
 
@@ -269,6 +269,12 @@ img {
     cursor: grab;
     z-index: 111;
 }
+.card.infight {
+    position: relative;
+    cursor: pointer;
+    margin: 0 20px;
+}
+.card.dead { opacity: .5; }
 
 .card > img {
     width: 100%;
@@ -301,10 +307,19 @@ img {
     height: 100%;
 }
 
-#fighting-cards > .cardrow {
-    height: 100%;
+#fighting-cards > .cardrow { height: 50%; }
+
+#fighting-cards > .cardrow > .card {
+    transition: .3s ease-out all;
 }
 
+#opponent-row > .turn {
+    transform: translateY(20px);
+}
+
+#own-row > .turn {
+    transform: translateY(-20px);
+}
 
 
 /*
@@ -347,4 +362,42 @@ img {
     padding: 0;
     transform: translate(-50%, -50%);
     font-size: 32px;
+}
+
+/*
+ *
+ */
+
+#widget-arrow {
+    position: absolute;
+    transform-origin: 50% 0;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+}
+
+#widget-arrow > .head,
+#widget-arrow > .tale {
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 100%;
+    padding-top: 100%;
+    background-position: 50% 50%;
+    background-size: cover;
+}
+#widget-arrow > .head {
+    background-image: url('./assets/img/arrow_head.png');
+}
+#widget-arrow > .tale {
+    background-image: url('./assets/img/arrow_tale.png');
+}
+#widget-arrow > .body {
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: 100%;
+    background-position: 50% 50%;
+    background-size: 100% 100%;
+    transform: scaleY(1.05);
+    background-image: url('./assets/img/arrow_body.png');
 }

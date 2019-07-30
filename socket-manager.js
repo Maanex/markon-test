@@ -8,7 +8,7 @@ const USE_CRAFTER = 'USE_CRAFTER';
 const PURCHASE_UPGRADE = 'PURCHASE_UPGRADE';
 const PLANNING_READY = 'PLANNING_READY';
 const CHANGE_DECK = 'CHANGE_DECK';
-const SET_FIGHT_TARGET = 'SET_FIGHT_TARGET'; // TODO
+const SET_FIGHT_TARGET = 'SET_FIGHT_TARGET';
 
 // in
 const GAME_NOT_FOUND = 'GAME_NOT_FOUND';
@@ -27,8 +27,9 @@ const POCKET_REMOVE = 'POCKET_REMOVE';
 const CARD_ADD = 'CARD_ADD';
 const UPGRADES = 'UPGRADES';
 const CARD_UPDATE = 'CARD_UPDATE'; // TODO
-const FIGHT_UPDATE = 'FIGHT_UPDATE'; // TODO
-const FIGHT_INIT = 'FIGHT_INIT'; // TODO
+const FIGHT_UPDATE = 'FIGHT_UPDATE';
+const FIGHT_TURN = 'FIGHT_TURN';
+const FIGHT_INIT = 'FIGHT_INIT';
 const FIGHT_DONE = 'FIGHT_DONE'; // TODO
 
 
@@ -206,12 +207,14 @@ function initSocket(reconnect = false) {
                     hp: parseInt(mes[5]),
                     maxhp: parseInt(mes[6]),
                     enchslots: parseInt(mes[7]),
-                    //TODO ENCHANTMENTS mes[8]
+                    enchantments: [ ],
                     posX: 0,
                     posY: 0,
                     velX: 0,
                     velY: 0
                 }
+                for (var en of mes.slice(8))
+                    card.enchantments.push(en);
                 app.game.hand.push(card);
                 break;
 
@@ -220,6 +223,74 @@ function initSocket(reconnect = false) {
                 app.game.upgrades.crafter = parseInt(mes[2]);
                 app.game.upgrades.picks = parseInt(mes[3]);
                 app.game.upgrades.deck = parseInt(mes[4]);
+                break;
+
+            case FIGHT_INIT:
+                app.game.fight.opponent = mes[1];
+                var ownCards = 0;
+                for (var str of mes.slice(2)) {
+                    var det = str.split(':');
+                    var card = str ? {
+                        name: det[0],
+                        type: det[1],
+                        img: det[2],
+                        attack: det[3],
+                        hp: det[4],
+                        maxhp: det[5],
+                        enchslots: det[6],
+                        enchantments: [ ]
+                    } : false;
+                    if (card) 
+                        for (var en of det.slice(7))
+                            card.enchantments.push(en);
+
+                    if (ownCards < app.game.upgrades.deck) {
+                        if (card) {
+                            card.index = app.game.fight.ownDeck.length;
+                            app.game.fight.ownDeck.push(card);
+                        }
+                        ownCards++;
+                    } else if (card) {
+                        card.index = app.game.fight.opponentDeck.length;
+                        app.game.fight.opponentDeck.push(card);
+                    }
+                }
+                break;
+
+            case FIGHT_TURN:
+                app.game.fight.ownTurn = parseInt(mes[1]);
+                app.game.fight.opponentTurn = parseInt(mes[2]);
+
+                if (app.game.fight.ownTurn >= 0) {
+                    var bounds = document.getElementById('own-row').childNodes[app.game.fight.ownTurn].getBoundingClientRect();
+                    app.arrow.from.x = bounds.left + (bounds.right - bounds.left) / 2;
+                    app.arrow.from.y = bounds.top;
+                    app.arrow.toCursor = true;
+                    app.arrow.visible = true;
+                }
+                break; 
+
+            case FIGHT_DONE:
+                app.arrow.visible = false;
+                break;
+                
+            case FIGHT_UPDATE:
+                var side = mes[1].startsWith('s') ? 'ownDeck' : 'opponentDeck';
+                var index = parseInt(mes[1].substring(1));
+                var card = app.game.fight[side][index];
+                card.attack = parseInt(mes[2]);
+                card.hp = parseInt(mes[3]);
+                card.maxhp = parseInt(mes[4]);
+                card.enchantments = mes[5].split(':');
+                break;
+        
+            case CARD_UPDATE:
+                var index = parseInt(mes[1]);
+                var card = app.game.hand[index];
+                card.attack = parseInt(mes[2]);
+                card.hp = parseInt(mes[3]);
+                card.maxhp = parseInt(mes[4]);
+                card.enchantments = mes[5].split(':');
                 break;
         }
     };

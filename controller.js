@@ -23,9 +23,44 @@ Vue.component('badge', {
 });
 
 Vue.component('card', {
-    props: [ 'obj', 'index', 'self', 'game' ],
-    template: '#t-card'
+    props: [ 'obj', 'index', 'self', 'game', 'infight', 'fraction' ],
+    template: '#t-card',
+    computed: {
+        cardsTurn: function() {
+            return (this.fraction == 'own' && this.game.fight.ownTurn === this.index)
+                || (this.fraction == 'opponent' && this.game.fight.opponentTurn === this.index);
+        },
+        dead: function() {
+            return this.obj.hp == 0;
+        }
+    }
 });
+
+Vue.component('widget-arrow', {
+    props: [ 'data', 'width', 'minlength' ],
+    template: '#t-widget-arrow',
+    computed: {
+        distX: function() {
+            return this.data.from.x - this.data.to.x;
+        },
+        distY: function() {
+            return this.data.from.y - this.data.to.y;
+        },
+        posX: function() {
+            return this.data.from.x - this.width / 2;
+        },
+        posY: function() {
+            return this.data.from.y;
+        },
+        length: function() {
+            return Math.max(this.minlength, Math.sqrt(this.distX*this.distX+this.distY*this.distY));
+        },
+        rot: function() {
+            return Math.atan2(this.distY, this.distX) + Math.PI / 2;
+        }
+    }
+});
+
 
 var app;
 app = new Vue({
@@ -59,7 +94,20 @@ app = new Vue({
                 deck: 1
             },
             hand: [ ],
-            deck: [ ]
+            deck: [ ],
+            fight: {
+                opponent: '',
+                ownDeck: [ ],
+                opponentDeck: [ ],
+                ownTurn: -1,
+                opponentTurn: -1
+            }
+        },
+        arrow: {
+            visible: false,
+            toCursor: false,
+            from: { x: 0, y: 0 },
+            to: { x: 0, y: 0 }
         },
 
 
@@ -107,6 +155,7 @@ app = new Vue({
                 upgrade_crafter: 'Crafter size %s',
                 upgrade_deck: 'Deck size %s',
                 upgrade_heal: 'Heal all units',
+                ready: 'Ready'
             }
         }
     },
@@ -116,6 +165,11 @@ app = new Vue({
         },
         lang: function() {
             return this.texts[this.language];
+        },
+        opponentName: function() {
+            for (var p of this.game.players)
+                if (p.uuid === this.game.fight.opponent) return p.name;
+            return '';
         }
     },
     methods: {
@@ -199,6 +253,11 @@ document.body.addEventListener('mousemove', e => {
     if (cardDragElement >= 0) {
         cardDragMouseX = e.pageX;
         cardDragMouseY = e.pageY;
+    }
+
+    if (app.arrow.visible && app.arrow.toCursor) {
+        app.arrow.to.x = e.pageX;
+        app.arrow.to.y = e.pageY;
     }
 });
 
@@ -331,7 +390,7 @@ function updateCards() {
                 var vdist = Math.abs(hmid - (o.posX + CARD_WIDTH / 2));
                 var hdist = Math.abs(vmid - (o.posY + CARD_HEIGHT / 2));
                 var totdist = Math.sqrt(vdist*vdist + hdist*hdist);
-                
+
                 if (app.game.deck[el.getAttribute('id')] === o.index) {
                     targetEl = el;
                     targetX = hmid - CARD_WIDTH/2;
