@@ -10,6 +10,7 @@ const PLANNING_READY = 'PLANNING_READY';
 const CHANGE_DECK = 'CHANGE_DECK';
 const SET_FIGHT_TARGET = 'SET_FIGHT_TARGET';
 const TRASH_CARD = 'TRASH_CARD';
+const ENCHANT_CARD = 'ENCHANT_CARD';
 
 // in
 const GAME_NOT_FOUND = 'GAME_NOT_FOUND';
@@ -29,7 +30,6 @@ const CARD_ADD = 'CARD_ADD';
 const UPGRADES = 'UPGRADES';
 const CARD_UPDATE = 'CARD_UPDATE';
 const FIGHT_UPDATE = 'FIGHT_UPDATE';
-const FIGHT_ATTACK = 'FIGHT_ATTACK';
 const FIGHT_TURN = 'FIGHT_TURN';
 const FIGHT_INIT = 'FIGHT_INIT';
 const FIGHT_DONE = 'FIGHT_DONE';
@@ -137,6 +137,7 @@ function initSocket(reconnect = false) {
                     Vue.set(app.game.spawner, data[0], {
                         type: data[1],
                         score: data[2],
+                        name: data[2],
                         posX: rand() * 94,
                         posY: rand() * 75,
                         posRel: true
@@ -179,10 +180,11 @@ function initSocket(reconnect = false) {
                     index: app.game.pocket.length,
                     type: mes[1],
                     score: parseInt(mes[2]),
+                    name: mes[2],
                     velX: 0,
                     velY: 0,
-                    posX: 20,
-                    posY: 20
+                    posX: document.body.clientWidth / 3,
+                    posY: Math.floor(Math.random() * document.body.clientHeight)
                 });
                 break;
 
@@ -272,22 +274,65 @@ function initSocket(reconnect = false) {
                 }
                 break;
 
-            case FIGHT_ATTACK:
-                // PLAY ATTACKING ANIMATION OR SMTH
-                break;
-
             case FIGHT_DONE:
                 app.arrow.visible = false;
                 break;
                 
             case FIGHT_UPDATE:
-                var side = mes[1].startsWith('s') ? 'ownDeck' : 'opponentDeck';
-                var index = parseInt(mes[1].substring(1));
-                var card = app.game.fight[side][index];
-                card.attack = parseInt(mes[2]);
-                card.hp = parseInt(mes[3]);
-                card.maxhp = parseInt(mes[4]);
-                card.enchantments = mes[5] ? mes[5].split(':') : [];
+                var attacker = parseInt(mes[1].substring(1));
+                var attackerSide = mes[1].startsWith('s') ? 'ownDeck' : 'opponentDeck';
+                var attackerCard = app.game.fight[attackerSide][victim];
+
+                var victim = parseInt(mes[2].substring(1));
+                var victimSide = mes[2].startsWith('s') ? 'ownDeck' : 'opponentDeck';
+                var victimCard = app.game.fight[victimSide][victim];
+
+                var dmgDealt = parseInt(mes[4]) - victimCard.hp;
+
+                if (attacker >= 0) {
+                    var attackerDomel = document.getElementById(mes[1].startsWith('s') ? 'own-row' : 'opponent-row').childNodes[attacker];
+                    var victimDomel = document.getElementById(mes[2].startsWith('s') ? 'own-row' : 'opponent-row').childNodes[victim];
+    
+                    var orgY = attackerDomel.getBoundingClientRect().top + 'px';
+                    var orgX = (attackerDomel.getBoundingClientRect().left - 20) + 'px';
+    
+                    attackerDomel.style.top = orgY;
+                    attackerDomel.style.left = orgX;
+                    attackerDomel.style.position = 'absolute';
+
+                    app.arrow.visible = false;
+
+                    setTimeout(() => {
+                        attackerDomel.style.top = victimDomel.getBoundingClientRect()[mes[2].startsWith('s') ? 'top' : 'bottom'] + 'px';
+                        attackerDomel.style.left = (victimDomel.getBoundingClientRect().left - 20) + 'px';
+                    }, 100);
+
+                    setTimeout(() => {
+                        victimCard.attack = parseInt(mes[3]);
+                        victimCard.hp = parseInt(mes[4]);
+                        victimCard.maxhp = parseInt(mes[5]);
+                        victimCard.enchantments = mes[6] ? mes[6].split(':') : [];
+    
+                        attackerDomel.style.top = orgY;
+                        attackerDomel.style.left = orgX;
+                    }, 400);
+    
+                    setTimeout(() => {
+                        attackerDomel.style.position = 'relative';
+                        attackerDomel.style.top = '';
+                        attackerDomel.style.left = '';
+                        attackerDomel.style.margin = '';
+                        app.arrow.visible = true;
+                    }, 800);
+                } else {
+                    setTimeout(() => {
+                        victimCard.attack = parseInt(mes[3]);
+                        victimCard.hp = parseInt(mes[4]);
+                        victimCard.maxhp = parseInt(mes[5]);
+                        victimCard.enchantments = mes[6] ? mes[6].split(':') : [];
+                    }, 400);
+                }
+
                 break;
         
             case CARD_UPDATE:

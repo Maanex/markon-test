@@ -1,14 +1,6 @@
 socket = initSocket();
 
 
-var enchants = {
-    test: {
-        name: 'Test',
-        icon: '',
-        description: '',
-        rarity: 3
-    }
-}
 
 
 function useCrafter() {
@@ -24,7 +16,7 @@ function planningReady() {
 }
 
 function gstateChange(state) {
-    document.getElementById('planning-ready').disabled = false;
+    setTimeout(() => document.getElementById('planning-ready').disabled = false, 1000);
     Vue.set(app.game.fight, 'opponent', '');
     Vue.set(app.game.fight, 'ownDeck', []);
     Vue.set(app.game.fight, 'opponentDeck', []);
@@ -51,5 +43,18 @@ function trashCard(index) {
     socketSend([
         TRASH_CARD,
         index
+    ]);
+}
+
+function applyEnchantment(enchindex, cardindex) {
+    if (app.game.hand[cardindex].enchslots == 0
+    || (app.game.hand[cardindex].enchslots == 1 && app.game.hand[cardindex].enchantments[0])
+    || (app.game.hand[cardindex].enchslots == 2 && app.game.hand[cardindex].enchantments[0] && app.game.hand[cardindex].enchantments[1]))
+        return; // all slots occupied
+
+    socketSend([
+        ENCHANT_CARD,
+        enchindex,
+        cardindex
     ]);
 }

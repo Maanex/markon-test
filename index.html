@@ -13,7 +13,7 @@
     <script src="./socket-manager.js"></script>
 </head>
 <body>
-    <div id="app" mousemove="alert(1)">
+    <div id="app">
         <widget-arrow :data="arrow" :width="100" :minlength="260"></widget-arrow>
 
         <page name="init" :active="page">
@@ -121,19 +121,28 @@
              :style="obj.posRel?`left:${obj.posX}%;top:${obj.posY}%;`:`left:${obj.posX}px;top:${obj.posY}px;`"
              :onmousedown="draggable?`dragMark(${index},window.event||arguments.callee.caller.arguments[0])`:''"
              @click="pick">
-                <img :src="`./assets/img/mark_${obj.type}.png`" draggable="false"/>
-                <p v-html="obj.score"></p>
+                <img v-if="obj.type != 'enchantment'" :src="`./assets/img/mark_${obj.type}.png`" draggable="false"/>
+                <p v-if="obj.type != 'enchantment'" v-html="obj.score"></p>
+                <img v-if="obj.type == 'enchantment'" :src="`./assets/img/enchantment_${obj.name}.png`" draggable="false"/>
         </div>
     </template>
 
     <template id="t-card">
-        <div :class="{ 'card': true, 'infight': infight, 'turn': cardsTurn, 'dead': dead }"
+        <div :class="{ 'card': true, 'infight': infight, 'turn': cardsTurn, 'dead': dead, 'enchadd': obj.enchadd }"
              :style="`left:${obj.posX}px;top:${obj.posY}px;`"
              :onmousedown="infight?`selectCard(${index}, '${fraction}')`:`dragCard(${index},window.event||arguments.callee.caller.arguments[0])`">
                 <img :src="`./assets/img/cardframe_${obj.type}.png`" draggable="false">
                 <p class="hp" v-html="`HP ${obj.hp} / ${obj.maxhp}`"></p>
                 <p class="attack" v-html="`ATTACK ${obj.attack}`"></p>
                 <p class="name" v-html="`${obj.name}`"></p>
+                <div class="slot slot1" :style="`background-image: url('./assets/img/enchantmentslot_${enchslot1img}.png')`">
+                    <img v-if="enchslot1" :src="`./assets/img/enchantment_${enchslot1}.png`" draggable="false">
+                    <p v-html="enchslot1title" :title="enchslot1desc"></p>
+                </div>
+                <div class="slot slot2" :style="`background-image: url('./assets/img/enchantmentslot_${enchslot2img}.png')`">
+                    <img v-if="enchslot2" :src="`./assets/img/enchantment_${enchslot2}.png`" draggable="false">
+                    <p v-html="enchslot2title" :title="enchslot2desc"></p>
+                </div>
         </div>
     </template>
 
