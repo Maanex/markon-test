@@ -42,7 +42,8 @@ var socket;
 function initSocket(reconnect = false) {
     window.WebSocket = window.WebSocket || window.MozWebSocket;
 
-    var socketUrl = '192.168.20.228:5000'; // TODO
+    //var socketUrl = '192.168.20.228:5000'; // TODO
+    var socketUrl = 'red-goose-34350.herokuapp.com'; // TODO
     var connection = new WebSocket(`ws://${socketUrl}`);
 
     connection.onopen = function () {
